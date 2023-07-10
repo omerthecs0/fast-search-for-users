@@ -6,5 +6,6 @@ Kod şu şekilde çalışmaktadır: kullanıcıdan aldığı arama kelimesi ile 
       
 Bu program ile birlikte kullanıcılar teker teker e-ticaret sitelerinde istedikleri ürünü aramak için zaman kaybetmekten ve aradıkları ürünler arasında kararsız kalmaktan kurtuluyor. Çünkü bu program birkaç dakika içerisinde kullanıcıya arama sonuçlarını excel dosyası olarak tablo halinde düzenli bir şekilde sunmaktadır.
 
-PROJENİN GENEL DURUMU:    Şu anda başlangıç aşamasındadır.
-PROJENİN EKSİKLERİ VE EKLENECEK ÖZELLİKLER:     Ürünlerin yorumları, soruları ve satıcı puanı verilerine ulaşamadım.
+
+PROJENİN GENEL DURUMU:    Şu anda başlangıç aşamasındadır. Şu anda "iphone 11" araması yapıldığında ortaya çıkan şudur -> https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
+PROJENİN EKSİKLERİ VE EKLENECEK ÖZELLİKLER:     Ürünlerin yorumları, soruları ve satıcı puanı verilerine ulaşamadım. Diğer e-ticaret siteleri de eklenmesi gerekiyor. Excel dosyasının editlenmesi gerekiyor.
