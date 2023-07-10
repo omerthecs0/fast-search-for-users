@@ -69,7 +69,7 @@ def take_product_info():
     x = 2
     for line in lines:
         product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_yorum(line), take_soru(line), take_genel(line))
-        edit_excel(product, x)
+        edit_excel(product, x, line)
         x += 1
 
 def take_kategori(link):
@@ -88,10 +88,17 @@ def take_ilanismi(link):
     isim = html_sayfa.find("h1", class_="pr-new-br").getText()
     return str(isim)
 def take_fiyat(link):
-    sayfa = requests.get(link)
-    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("div", class_="pr-bx-nm with-org-prc").getText()
-    return str(isim)
+    try:
+        sayfa = requests.get(link)
+        html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+        isim = html_sayfa.find("div", class_="pr-bx-nm with-org-prc").getText()
+        return str(isim)
+    except AttributeError:
+        sayfa = requests.get(link)
+        html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+        isim = html_sayfa.find("div", class_="featured-prices").getText()
+        return str(isim)
+
 def take_seller(link):
     sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
@@ -129,7 +136,7 @@ def create_excel():
     sheet['H1'] = 'General'
     file.save("products.xlsx")
 
-def edit_excel(product, x):
+def edit_excel(product, x, link):
     file = load_workbook("products.xlsx")
     sheet = file.active
 
@@ -142,5 +149,6 @@ def edit_excel(product, x):
     sheet[f"G{x}"].value = f'{product.soru}'
     sheet[f"H{x}"].value = f'{product.genel}'
     sheet[f"I{x}"].value = 'TRENDYOL'
+    sheet[f"J{x}"].value = f'{link}'
 
     file.save("products.xlsx")
