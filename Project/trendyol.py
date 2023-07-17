@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import re
 from main import Product
 from openpyxl import Workbook, load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.styles import Font
 
 
 
@@ -68,14 +70,16 @@ def take_product_info():
     create_excel()
     x = 2
     for line in lines:
-        product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_yorum(line), take_soru(line), take_genel(line))
+        product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_seller_point(line), take_other_sellers(line), take_yorum(line), take_soru(line), take_genel(line))
         edit_excel(product, x, line)
         x += 1
+
 
 def take_kategori(link):
     sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("div", class_="product-detail-breadcrumb full-width").getText()
+    isim = re.sub(r'([A-Z])', r' \1', isim)
     return str(isim)
 def take_marka(link):
     sayfa = requests.get(link)
@@ -98,13 +102,30 @@ def take_fiyat(link):
         html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
         isim = html_sayfa.find("div", class_="featured-prices").getText()
         return str(isim)
-
 def take_seller(link):
     sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("div", class_="flex-container").getText()
     seller = re.search(r"Bu ürün (.+?) tarafından", isim).group(1)
     return str(seller)
+def take_seller_point(link):
+    pass
+def take_other_sellers(link):
+    sayfa = requests.get(link)
+    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+    isim = html_sayfa.find_all("div", class_="pr-mc-w gnr-cnt-br")
+    text = "(Satıcı Adı/Satıcı Puanı/Kargo/Fatura/Fiyat)\n\n"
+
+    x = BeautifulSoup(str(isim), "html.parser")
+    linkler = []
+    for i in x.find_all("a"):
+        linkler.append(i['href'])
+
+    for i in range(len(isim)):
+        o = BeautifulSoup(isim[i].text, "html.parser")
+        o = re.sub(r"Ürüne Git", "", str(o))
+        text += f"{i+2}. satıcı: " + str(o) + " https://www.trendyol.com/" + linkler[i] + "\n"
+    return text
 def take_yorum(link):
     pass
 def take_soru(link):
@@ -131,9 +152,27 @@ def create_excel():
     sheet['C1'] = 'Ad Name'
     sheet['D1'] = 'Price'
     sheet['E1'] = 'Seller'
-    sheet['F1'] = 'Comments'
-    sheet['G1'] = 'Questions'
-    sheet['H1'] = 'General'
+    sheet['F1'] = 'Seller Point'
+    sheet['G1'] = 'Other Sellers'
+    sheet['H1'] = 'Comments'
+    sheet['I1'] = 'Questions'
+    sheet['J1'] = 'General'
+    sheet['K1'] = 'Site'
+    sheet['L1'] = 'Link'
+
+    bold_font = Font(bold=True)
+    fill = PatternFill(start_color='FF0000FF', end_color='FF0000FF', fill_type='solid')
+    cell_range = 'A1:L1'
+
+    for row in sheet[cell_range]:
+        for cell in row:
+            cell.fill = fill
+            cell.font = bold_font
+
+
+
+
+
     file.save("products.xlsx")
 
 def edit_excel(product, x, link):
@@ -145,10 +184,12 @@ def edit_excel(product, x, link):
     sheet[f"C{x}"].value = f'{product.ilanismi}'
     sheet[f"D{x}"].value = f'{product.fiyat}'
     sheet[f"E{x}"].value = f'{product.seller}'
-    sheet[f"F{x}"].value = f'{product.yorum}'
-    sheet[f"G{x}"].value = f'{product.soru}'
-    sheet[f"H{x}"].value = f'{product.genel}'
-    sheet[f"I{x}"].value = 'TRENDYOL'
-    sheet[f"J{x}"].value = f'{link}'
+    sheet[f"F{x}"].value = f'{product.seller_point}'
+    sheet[f"G{x}"].value = f'{product.other_sellers}'
+    sheet[f"H{x}"].value = f'{product.yorum}'
+    sheet[f"I{x}"].value = f'{product.soru}'
+    sheet[f"J{x}"].value = f'{product.genel}'
+    sheet[f"K{x}"].value = 'TRENDYOL'
+    sheet[f"L{x}"].value = f'{link}'
 
     file.save("products.xlsx")
