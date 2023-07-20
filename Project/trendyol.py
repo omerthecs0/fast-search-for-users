@@ -15,7 +15,6 @@ product = Product()
 
 
 def edit_search(url,search, len_search):
-    
     s_words = search.split(" ")
     
     for i  in range(len_search-1):
@@ -33,19 +32,15 @@ def edit_search(url,search, len_search):
         url += "%20"
     url += s_words[len_search-1]
     url += "&os=1"
-    take_html(url)
+    edit_html(url)
 
 
-
-
-def take_html(url):
+def edit_html(url):
     sayfa = requests.get(url)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("div", class_="p-card-chldrn-cntnr card-border")
-    edit_html(isim)
 
 
-def edit_html(isim):
     # satır satır yazdırıyorum hepsini
     with open("links.txt", "w") as file:
         for i in range(len(isim)):
@@ -147,7 +142,9 @@ def take_ratings(link):
         driver.get(link)
         result = driver.find_element(By.CLASS_NAME, "pr-in-rnr")
         res = result.text.splitlines()
-        x += f"{res[0]} Satıcı Puanı\n{res[1]}\n{res[2]}\n{res[3]}"
+        x += f"{res[0]} Satıcı Puanı"
+        for i in range(len(res)-1):
+            x += f"\n{res[i+1]}"
         return x
     except NoSuchElementException:
         return "There's no ratings"
