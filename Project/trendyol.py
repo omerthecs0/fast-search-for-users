@@ -168,7 +168,7 @@ def take_reviews(link):
     if son != "":
         return son
     else:
-        return "No reviews for this product"
+        return "No review for this product"
 
 def take_answers(link):
     service = Service("./chromediver.exe")
