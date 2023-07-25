@@ -1,12 +1,12 @@
 # fast-search-for-users
 
 TR
-Bu projede yazmış olduğum kod, kullanıcıların e-ticaret sitelerinde istedikleri ürünleri gereğinden fazla zaman kaybetmelerini engellemektedir.
+Bu projede yazmış olduğum kod, kullanıcıların e-ticaret sitelerinde gereğinden fazla zaman kaybetmeden ürün araştırması yapmalarını sağlamaktadır.
 
-Kod şu şekilde çalışmaktadır: kullanıcıdan aldığı arama kelimesi ile e-ticaret sitelerinde arama yaparak arama sonucu çıkan tüm ürünlein linkini alır ve tüm liklere gider. Bu gitmiş olduğu web sitelerinde web scrabing(web sitelerinin html kodlarından site içerisindeki verileri almak ) yaparak aldığı verilerle bir .xlsx uzantılı dosya oluşturarak verileri kaydeder. Web sitelerinden aldığı bilgiler;
-      Marka adı, kategodi adı, ilan ismi, ürünün ücreti, satıcı adı, ürün yorumları, satıcı soruları, ürünün genel özellikleri...
+Kod şu şekilde çalışmaktadır; kullanıcıdan aldığı arama kelimesi ile e-ticaret sitelerinde arama yaparak, arama sonucu çıkan tüm ürünlein linkini alır ve tüm liklere gider. Bu gitmiş olduğu web sitelerde web scraping(web sitelerinin html kodlarından site içerisindeki verileri almak ) yaparak aldığı verilerle bir .xlsx dosyasında tablo şeklinde verileri kaydeder. Web sitelerinden aldığı bilgiler;
+      Ürün kategorisi, markası, ismi, fiyatı, değerlendirmeleri, genel bilgileri, satıcı adı, diğer satıcılar(değerlendirmeleri ve ürün ücretleri dahil)...
       
-Bu program ile birlikte kullanıcılar teker teker e-ticaret sitelerinde istedikleri ürünü aramak için zaman kaybetmekten ve aradıkları ürünler arasında kararsız kalmaktan kurtuluyor. Çünkü bu program birkaç dakika içerisinde kullanıcıya arama sonuçlarını excel dosyası olarak tablo halinde düzenli bir şekilde sunmaktadır.
+Bu program ile birlikte kullanıcılar teker teker e-ticaret sitelerinde istedikleri ürünü aramak için zaman kaybetmekten, enerji harcamaktan ve aradıkları ürünler arasında kararsız kalmaktan kurtuluyor. Çünkü bu program birkaç dakika içerisinde kullanıcıya arama sonuçlarını excel dosyası olarak tablo halinde düzenli bir şekilde sunmaktadır.
 
 
 PROJENİN GENEL DURUMU:    Şu anda sadece 2 e ticaret sitesi için sonuç getirmektedir. Diğer siteler ve google alışveriş aramaları için hala çalışıyorum. "iphone 11" araması yapıldığında ortaya çıkan sonuç şudur -> https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
@@ -14,12 +14,11 @@ PROJENİN GENEL DURUMU:    Şu anda sadece 2 e ticaret sitesi için sonuç getir
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 EN
-The code I wrote in this project prevents users from wasting more than necessary time on the products they want on e-commerce sites.
+In this project, the code I have written enables users to conduct product research on e-commerce websites without wasting excessive time. The code works as follows: It takes a search keyword from the user and performs searches on e-commerce websites. It collects all the links of products from the search results and visits each link one by one. Upon visiting these websites, it performs web scraping, extracting data from the HTML codes of the websites to gather relevant information about the products. This information is then stored in a .xlsx file in tabular form.
 
-The code works as follows: by searching e-commerce sites with the search word received from the user, it takes the link of all the products that come up as a result of the search and goes to all the links. It saves the data by creating a .xlsx file with the data it receives by doing web scrabing (receiving the data in the site from the html codes of the websites) on the websites it has gone to. Information received from websites;
-       Brand name, category name, ad name, product price, seller name, product reviews, seller questions, general features of the product...
-      
-With this program, users get rid of wasting time searching for the product they want on e-commerce sites one by one and being undecided about the products they are looking for. Because this program presents the search results to the user as an excel file in a regular manner in a few minutes.
+The data collected from the websites includes product category, brand, name, price, reviews, general details, seller name, and other sellers' information (including reviews and product prices).
 
+With this program, users are relieved from the time-consuming, energy-draining, and indecisive process of individually searching for their desired products on e-commerce websites. Because this program presents search results to the user within a few minutes, in the form of a well-organized table in an Excel file..
 
-GENERAL STATUS OF THE PROJECT: Currently, it brings results for 2 (two) e-commerce sites. I'm still working on other sites and google shopping searches. Searching for "iphone 11" is the following -> https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
+CURRENT STATE OF THE PROJECT: Currently, the code is working for only two e-commerce websites. I am still working on adding support for other websites and Google Shopping searches. When the search keyword "iphone 11" is used, the results obtained can be found at this link: https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
+
