@@ -6,138 +6,235 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from openpyxl import Workbook, load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.styles import Font
 from selenium.common.exceptions import NoSuchElementException
 
 
-
-def edit_link(search):
-    url = "https://www.teknosa.com/arama/?s="
-    search = re.sub(r" ", "+", search)
-    url += search
-    take_links(url)
+product = Product()
 
 
-def take_links(url):
+def edit_search(url,search, len_search):
+    s_words = search.split(" ")
+    
+    for i  in range(len_search-1):
+        url = url + s_words[i]
+        url += "%20"
+    url += s_words[len_search-1]
+    url += "&qt="
+    for i  in range(len_search-1):
+        url = url + s_words[i]
+        url += "%20"
+    url += s_words[len_search-1]
+    url += "&st="
+    for i  in range(len_search-1):
+        url = url + s_words[i]
+        url += "%20"
+    url += s_words[len_search-1]
+    url += "&os=1"
+    edit_html(url)
+
+
+def edit_html(url):
     sayfa = requests.get(url)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find_all("div", class_="products")
+    isim = html_sayfa.find_all("div", class_="p-card-chldrn-cntnr card-border")
 
 
-    x = re.findall(r'href="(.+)" title', str(isim))
-    x = x[:12]
-    linkler = []
-    for i in x:
-        linkler.append("https://www.teknosa.com" + re.sub(r"\?shopId=.+", "", i))
+    # satır satır yazdırıyorum hepsini
+    with open("links.txt", "w") as file:
+        for i in range(len(isim)):
+            x = f"{isim[i]}\n"
+            file.write(x)
+
+
+    # ürün linki haline getiriyorum
+    with open("links.txt", "r") as file:
+        lines = file.readlines()
 
     with open("links.txt", "w") as file:
-        for i in range(12):
-            file.writelines(linkler[i] + "\n")
+        for line in lines:
+            line = re.sub(r'(<div class="p-card-chldrn-cntnr card-border"><a href=")', "", line)
+            line = re.sub(r'("><div class=").*', "", line)
+            line = re.sub(r'amp;', "", line)
+            line = "https://www.trendyol.com" + line
+            file.writelines(line)
+    
 
 
 
 def take_product_info():
     with open("links.txt", "r") as file:
         lines = file.readlines()
-
-    x = 35
-    for link in lines:
-        print(x)
-        product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_other_sellers(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link))
-        edit_excel(product, x, link)
+    create_excel()
+    x = 2
+    for line in lines:
+        product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_other_sellers(line), take_ratings(line), take_reviews(line), take_answers(line), take_genel(line))
+        edit_excel(product, x, line)
         x += 1
 
 
 def take_kategori(link):
-    sayfa = requests.get(link.strip())
+    sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("ol", class_="breadcrumb").getText()
-
-    isim = isim.strip().splitlines()
-    categori = ""
-    for line in isim:
-        if line != "":
-            categori += line + " / "
-    return categori[:-3]
+    isim = html_sayfa.find("div", class_="product-detail-breadcrumb full-width").getText()
+    isim = re.sub(r'([A-Z])', r' \1', isim)
+    return str(isim)
 
 def take_marka(link):
-    sayfa = requests.get(link.strip())
+    sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("h1", class_="pdp-title")
-    x = re.findall(r".+><b>(.+?)</b></a>  (.+?)</h1>", str(isim))
-    return x[0][0]
+    try:
+        isim = html_sayfa.find("a", class_="product-brand-name-with-link").getText()
+        return isim
+    except AttributeError:
+        isim = html_sayfa.find("span", class_="product-brand-name-without-link").getText()
+        return isim
 
 def take_ilanismi(link):
-    sayfa = requests.get(link.strip())
+    sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("h1", class_="pdp-title")
-    x = re.findall(r".+><b>(.+?)</b></a>  (.+?)</h1>", str(isim))
-    return x[0][1]
+    isim = html_sayfa.find("h1", class_="pr-new-br").getText()
+    return str(isim)
 
 def take_fiyat(link):
-    sayfa = requests.get(link.strip())
-    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("span", class_="prc prc-last").getText()
-    return isim
-
+    try:
+        sayfa = requests.get(link)
+        html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+        isim = html_sayfa.find("div", class_="pr-bx-nm with-org-prc").getText()
+        return str(isim)
+    except AttributeError:
+        sayfa = requests.get(link)
+        html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+        isim = html_sayfa.find("div", class_="featured-prices").getText()
+        return str(isim)
+    
 def take_seller(link):
-    sayfa = requests.get(link.strip())
+    sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("div", class_="pdp-seller-info").getText()
-    isim = isim.splitlines()
-    text = isim[0] + ": " + isim[1]
-    return text
+    isim = html_sayfa.find("div", class_="flex-container").getText()
+    seller = re.search(r"Bu ürün (.+?) tarafından", isim).group(1)
+    return str(seller)
 
 def take_other_sellers(link):
-    sayfa = requests.get("https://www.teknosa.com/apple-mm253zma-iphone-13-uyumlu-magsafe-ozellikli-silikon-kilif-pembe-pomelo-p-145078194")
+    sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find_all("div", class_="pds active")
-    isim += html_sayfa.find_all("div", class_="pds hide")
-    if isim == []:
-        return "No more sellers"
-    else:
-        sellers = re.findall(r'"><b>(.+?)</b></a>', str(isim))
-        links = re.findall(r'data-prod-seller-url="(.+?)">', str(isim))
-        for i in range(len(links)):
-            if "teknosa" in links[i]:
-                sellers.insert(i, "Teknosa")
-        prices = re.findall(r'class="prc prc-last">(.+?)</span>', str(isim))
-        text = ""
-        for i in range(len(isim)):
-            text += f"Satıcı {i+2}: {sellers[i]} - Fiyat: {prices[i]} - Link: {links[i]}\n"
-        return (text)
+    isim = html_sayfa.find_all("div", class_="pr-mc-w gnr-cnt-br")
+    text = "(Satıcı Adı/Satıcı Puanı/Kargo/Fatura/Fiyat)\n\n"
+
+    x = BeautifulSoup(str(isim), "html.parser")
+    linkler = []
+    for i in x.find_all("a"):
+        linkler.append(i['href'])
+
+    for i in range(len(isim)):
+        o = BeautifulSoup(isim[i].text, "html.parser")
+        o = re.sub(r"Ürüne Git", "", str(o))
+        text += f"{i+2}. satıcı: " + str(o) + " https://www.trendyol.com/" + linkler[i] + "\n"
+    return text
 
 def take_ratings(link):
-    sayfa = requests.get(link.strip())
-    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find("div", class_="pdp-rating").getText()
-    isim = isim.strip().splitlines()
-
-    tx = []
-    for i in isim:
-        if i != "":
-            tx.append(i.strip())
-    return ("Ürün Puanı: " + tx[0]+ " " + tx[1])
+    x = ""
+    try:
+        service = Service("./chromediver.exe")
+        driver = webdriver.Chrome(service=service)
+        driver.minimize_window()
+        driver.get(link)
+        result = driver.find_element(By.CLASS_NAME, "pr-in-rnr")
+        res = result.text.splitlines()
+        x += f"{res[0]} Satıcı Puanı"
+        for i in range(len(res)-1):
+            x += f"\n{res[i+1]}"
+        return x
+    except NoSuchElementException:
+        return "There's no ratings"
 
 def take_reviews(link):
-    pass
-        
+    service = Service("./chromediver.exe")
+    driver = webdriver.Chrome(service=service)
+    link = re.sub(r"\?boutiqueId=", "/yorumlar\?boutiqueId=", link)
+    driver.minimize_window()
+    driver.get(link)
+
+    result = driver.find_elements(By.CLASS_NAME, "comment")
+
+    son = ""
+    x = 1
+    for text in result:
+        t = text.text
+        t = t.splitlines()
+        son += (str(x) + ". -> " + t[2] + "-" + t[3] + "\n")
+        x += 1
+    if son != "":
+        return son
+    else:
+        return "No review for this product"
+
 def take_answers(link):
-    pass
+    service = Service("./chromediver.exe")
+    driver = webdriver.Chrome(service=service)
+    link = re.sub(r"\?boutiqueId=.*&", "/saticiya-sor?", link)
+    driver.minimize_window()
+    driver.get(link)
+
+    result = driver.find_elements(By.CLASS_NAME, "item-content")
+    answers = []
+    for i in range(len(result)):
+        text = result[i].text
+        x = text.splitlines()
+        answers.append(x[0])
+
+    result2 = driver.find_elements(By.CLASS_NAME, "answer")
+    replies = []
+    for i in range(len(result)):
+        text = result2[i].text
+        x = text.splitlines()
+        cevap = x[0]+x[1]
+        cevap = re.sub(r".*içinde cevaplandı.", "", cevap)
+        replies.append(cevap)
+    son = ""
+    for i in range(len(answers)):
+        son += (f"Soru{i+1}: {answers[i]} - Cevap{i+1}: {replies[i]}\n")
+    return (son)
+
 def take_genel(link):
-    sayfa = requests.get(link.strip())
+    sayfa = requests.get(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find_all("p", class_="")
-    text = ""
-    for i in isim:
-        text += i.getText()
-    return (text)
+    isim = html_sayfa.find("div", class_="flex-container").getText()
+    return str(isim)
 
 
 
-
-def main(search):
-    edit_link(search)
+def main(search, len_search):
+    url = "https://www.trendyol.com/sr?q="
+    edit_search(url, search, len_search)
     take_product_info()
+    
+
+def create_excel():
+    file = Workbook()
+    sheet = file.active
+    sheet['A1'] = 'Categori'
+    sheet['B1'] = 'Brand'
+    sheet['C1'] = 'Ad Name'
+    sheet['D1'] = 'Price'
+    sheet['E1'] = 'Seller'
+    sheet['F1'] = 'Ratings'
+    sheet['G1'] = 'Reviews'
+    sheet['H1'] = 'ANSWER-REPLY'
+    sheet['I1'] = 'General'
+    sheet['J1'] = 'E-Commerce Site'
+    sheet['K1'] = 'Link'
+    sheet['L1'] = 'Other Sellers'
+
+    bold_font = Font(bold=True)
+    fill = PatternFill(start_color='FF0000FF', end_color='FF0000FF', fill_type='solid')
+    cell_range = 'A1:L1'
+    for row in sheet[cell_range]:
+        for cell in row:
+            cell.fill = fill
+            cell.font = bold_font
+    file.save("products.xlsx")
 
 
 def edit_excel(product, x, link):
@@ -153,7 +250,7 @@ def edit_excel(product, x, link):
     sheet[f"G{x}"].value = f'{product.reviews}'
     sheet[f"H{x}"].value = f'{product.answers}'
     sheet[f"I{x}"].value = f'{product.genel}'
-    sheet[f"J{x}"].value = 'TEKNOSA'
+    sheet[f"J{x}"].value = 'TRENDYOL'
     sheet[f"K{x}"].value = f'{link}'
     sheet[f"L{x}"].value = f'{product.other_sellers}'
 
