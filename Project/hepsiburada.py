@@ -1,11 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+from main import Product
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from openpyxl import Workbook, load_workbook
-from main import Product
 from selenium.common.exceptions import NoSuchElementException
 
 
@@ -13,7 +13,7 @@ from selenium.common.exceptions import NoSuchElementException
 
 
 
-def edit_link(search, len_search):
+def edit_link(search):
     d = "https://www.hepsiburada.com/ara?q="
     x = re.sub(r" ", "+", search)
     url = d + x
@@ -71,9 +71,9 @@ def take_kategori(link):
     x = ""
     for line in text:
         if line != "":
-            x += " > " + line
+            x += line + " > "
     del text
-    return x
+    return x[:-3]
 
 def take_marka(link):
     service = Service("./chromediver.exe")
@@ -214,8 +214,8 @@ def take_genel(link):
 
 
 
-def main(search, len_search):
-    edit_link(search, len_search)
+def main(search):
+    edit_link(search)
     take_product_info()
 
 
@@ -233,7 +233,7 @@ def edit_excel(product, x, link):
     sheet[f"G{x}"].value = f'{product.reviews}'
     sheet[f"H{x}"].value = f'{product.answers}'
     sheet[f"I{x}"].value = f'{product.genel}'
-    sheet[f"J{x}"].value = 'N11'
+    sheet[f"J{x}"].value = 'HEPSİBURADA'
     sheet[f"K{x}"].value = f'{link}'
     sheet[f"L{x}"].value = f'{product.other_sellers}'
 
