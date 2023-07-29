@@ -2,11 +2,28 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from main import Product
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
 from openpyxl import Workbook, load_workbook
-from selenium.common.exceptions import NoSuchElementException
+from requests.exceptions import ConnectionError
+import time
+import requests
+
+
+
+def retry(func, retries=3):
+    def retry_wrapper(*args, **kwargs):
+        attempts = 0
+        while attempts < retries:
+            try:
+                return func(*args, **kwargs)
+            except ConnectionError as e:
+                print(attempts)
+                time.sleep(2)
+                attempts += 1
+    return retry_wrapper
+
+@retry
+def get_page_content(link):
+    return requests.get(link.strip())
 
 
 
@@ -18,7 +35,7 @@ def edit_link(search):
 
 
 def take_links(url):
-    sayfa = requests.get(url)
+    sayfa = get_page_content(url)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("div", class_="products")
 
@@ -48,7 +65,7 @@ def take_product_info():
 
 
 def take_kategori(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("ol", class_="breadcrumb").getText()
 
@@ -60,27 +77,27 @@ def take_kategori(link):
     return categori[:-3]
 
 def take_marka(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("h1", class_="pdp-title")
     x = re.findall(r".+><b>(.+?)</b></a>  (.+?)</h1>", str(isim))
     return x[0][0]
 
 def take_ilanismi(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("h1", class_="pdp-title")
     x = re.findall(r".+><b>(.+?)</b></a>  (.+?)</h1>", str(isim))
     return x[0][1]
 
 def take_fiyat(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("span", class_="prc prc-last").getText()
     return isim
 
 def take_seller(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("div", class_="pdp-seller-info").getText()
     isim = isim.splitlines()
@@ -88,7 +105,7 @@ def take_seller(link):
     return text
 
 def take_other_sellers(link):
-    sayfa = requests.get("https://www.teknosa.com/apple-mm253zma-iphone-13-uyumlu-magsafe-ozellikli-silikon-kilif-pembe-pomelo-p-145078194")
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("div", class_="pds active")
     isim += html_sayfa.find_all("div", class_="pds hide")
@@ -107,7 +124,7 @@ def take_other_sellers(link):
         return (text)
 
 def take_ratings(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find("div", class_="pdp-rating").getText()
     isim = isim.strip().splitlines()
@@ -123,8 +140,9 @@ def take_reviews(link):
         
 def take_answers(link):
     pass
+
 def take_genel(link):
-    sayfa = requests.get(link.strip())
+    sayfa = get_page_content(link)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("p", class_="")
     text = ""
