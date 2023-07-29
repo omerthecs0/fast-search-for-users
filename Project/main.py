@@ -18,6 +18,7 @@ import hepsiburada
 import teknosa
 
 
+
 def main():
     search = take_search()
     len_search = len(search.split(" "))
@@ -28,6 +29,8 @@ def main():
 
 def take_search():
     return input("Enter your search: ")
+
+
 
 
 if __name__ == "__main__":
