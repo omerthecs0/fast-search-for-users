@@ -16,7 +16,6 @@ def retry(func, retries=3):
             try:
                 return func(*args, **kwargs)
             except ConnectionError as e:
-                print(attempts)
                 time.sleep(2)
                 attempts += 1
     return retry_wrapper
@@ -56,10 +55,9 @@ def take_product_info():
     with open("links.txt", "r") as file:
         lines = file.readlines()
 
-    x = 35
+    x = 25
     for link in lines:
-        print(x)
-        product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_other_sellers(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link))
+        product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_variants(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link), take_other_sellers(link))
         edit_excel(product, x, link)
         x += 1
 
@@ -104,24 +102,8 @@ def take_seller(link):
     text = isim[0] + ": " + isim[1]
     return text
 
-def take_other_sellers(link):
-    sayfa = get_page_content(link)
-    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find_all("div", class_="pds active")
-    isim += html_sayfa.find_all("div", class_="pds hide")
-    if isim == []:
-        return "No more sellers"
-    else:
-        sellers = re.findall(r'"><b>(.+?)</b></a>', str(isim))
-        links = re.findall(r'data-prod-seller-url="(.+?)">', str(isim))
-        for i in range(len(links)):
-            if "teknosa" in links[i]:
-                sellers.insert(i, "Teknosa")
-        prices = re.findall(r'class="prc prc-last">(.+?)</span>', str(isim))
-        text = ""
-        for i in range(len(isim)):
-            text += f"Satıcı {i+2}: {sellers[i]} - Fiyat: {prices[i]} - Link: {links[i]}\n"
-        return (text)
+def take_variants(link):
+    pass
 
 def take_ratings(link):
     sayfa = get_page_content(link)
@@ -150,6 +132,25 @@ def take_genel(link):
         text += i.getText()
     return (text)
 
+def take_other_sellers(link):
+    sayfa = get_page_content(link)
+    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+    isim = html_sayfa.find_all("div", class_="pds active")
+    isim += html_sayfa.find_all("div", class_="pds hide")
+    if isim == []:
+        return "No more sellers"
+    else:
+        sellers = re.findall(r'"><b>(.+?)</b></a>', str(isim))
+        links = re.findall(r'data-prod-seller-url="(.+?)">', str(isim))
+        for i in range(len(links)):
+            if "teknosa" in links[i]:
+                sellers.insert(i, "Teknosa")
+        prices = re.findall(r'class="prc prc-last">(.+?)</span>', str(isim))
+        text = ""
+        for i in range(len(isim)):
+            text += f"Satıcı {i+2}: {sellers[i]} - Fiyat: {prices[i]} - Link: {links[i]}\n"
+        return (text)
+
 
 
 
@@ -167,12 +168,13 @@ def edit_excel(product, x, link):
     sheet[f"C{x}"].value = f'{product.ilanismi}'
     sheet[f"D{x}"].value = f'{product.fiyat}'
     sheet[f"E{x}"].value = f'{product.seller}'
-    sheet[f"F{x}"].value = f'{product.ratings}'
-    sheet[f"G{x}"].value = f'{product.reviews}'
-    sheet[f"H{x}"].value = f'{product.answers}'
-    sheet[f"I{x}"].value = f'{product.genel}'
-    sheet[f"J{x}"].value = 'TEKNOSA'
-    sheet[f"K{x}"].value = f'{link}'
-    sheet[f"L{x}"].value = f'{product.other_sellers}'
+    sheet[f"F{x}"].value = f'{product.variants}'
+    sheet[f"G{x}"].value = f'{product.ratings}'
+    sheet[f"H{x}"].value = f'{product.reviews}'
+    sheet[f"I{x}"].value = f'{product.answers}'
+    sheet[f"J{x}"].value = f'{product.genel}'
+    sheet[f"K{x}"].value = 'TEKNOSA'
+    sheet[f"L{x}"].value = f'{link}'
+    sheet[f"M{x}"].value = f'{product.other_sellers}'
 
     file.save("products.xlsx")
