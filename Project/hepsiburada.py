@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from openpyxl import Workbook, load_workbook
 from selenium.common.exceptions import NoSuchElementException
-
+import time
 
 
 
@@ -49,9 +49,9 @@ def take_product_info():
     with open("links.txt", "r") as file:
         links = file.readlines()
     
-    x = 27
+    x = 18
     for link in links:
-        product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_other_sellers(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link))
+        product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_variants(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link), take_other_sellers(link))
         edit_excel(product, x, link)
         x += 1
 
@@ -119,30 +119,36 @@ def take_seller(link):
     x = x.text.splitlines()[1]
     return x
 
-def take_other_sellers(link):
+def take_variants(link):
     service = Service("./chromediver.exe")
     driver = webdriver.Chrome(service=service)
-    driver.minimize_window()
     driver.get(link)
 
-    puan = driver.find_element(By.CLASS_NAME, "chevron-list-container")
-    puan = puan.get_attribute("outerHTML")
-    with open("anan.txt", "w") as file:
-        file.write(puan)
-    sellers = re.findall(r'<span data-bind="text: merchantName">(.+?)</span>', puan)
-    ratings = re.findall(r'merchantRatingSummary.cssClass">(.+?)</span>', puan)
-    prices = re.findall(r'style="text-decoration: none">(.+?)</span>', puan)
-    for i in range(len(sellers)):
-        if sellers[i] == "Hepsiburada":
-            ratings.insert(i, "-")
-            break
-
-    text = ""
-    for i in range(len(sellers)):
-        try:
-            text += f"Satıcı {i+2}: {sellers[i]} - {ratings[i]} - Ürün fiyatı: {prices[i]} \n"
-        except IndexError:
-            text += f"Satıcı {i+2}: {sellers[i]} -  - Ürün fiyatı: {prices[i]} \nSatıcı puanlarında kayma meydana geldi!!"
+    ka = driver.find_elements(By.CLASS_NAME, 'variants-wrapper') ##Opsiyon kategorileri
+    a = driver.find_elements(By.CLASS_NAME, "variants-content") ##Varyant html
+    variants = [] ##Varyant isimleri
+    for i in range(len(a)):
+        var_names = a[i].find_elements(By.CLASS_NAME, "variant-name")
+        for k in range(len(var_names)):
+            variants.append(var_names[k].text)
+    choices = re.findall(r'data-value="(.+?)" for', ka[-1].get_attribute("outerHTML"))##Seçenek isimleri
+    text = "VARİANTS\n" 
+    prices = []
+    for i in range(len(ka)):
+        time.sleep(5)
+        buttons =driver.find_elements(By.CSS_SELECTOR, 'div[data-bind*="setActiveVariantContainer"], input[data-bind*="variantProperties().observe(&quot;Seçenek&quot;)"]') ##Tıklanabilir öğeler.
+        driver.execute_script("window.scrollTo(0, 1000);")
+        time.sleep(3)
+        buttons[-i-1].click()
+        time.sleep(2)
+        var_prices = driver.find_elements(By.CLASS_NAME, "variant-property-price") ##Varyantların fiyatları
+        for l in range(len(var_prices)):
+            prices.append(var_prices[l].text)
+        text += f"    {choices[-i-1]}: "
+        for i in range(len(variants)):
+            text += f"Varyant{i+1}: {variants[i]} {prices[i]} - \n"
+        prices = []
+    text += "\n(Eğer varyantın fiyatı bulunmuyorsa ürünün o varyantında fiyat bilgisi ve stok sayısı yoktur.)"
     return text
 
 def take_ratings(link):
@@ -184,6 +190,7 @@ def take_reviews(link):
         
 def take_answers(link):
     pass
+
 def take_genel(link):
     service = Service("./chromediver.exe")
     driver = webdriver.Chrome(service=service)
@@ -212,6 +219,32 @@ def take_genel(link):
             break
     return text1 + "\n" + text2
 
+def take_other_sellers(link):
+    service = Service("./chromediver.exe")
+    driver = webdriver.Chrome(service=service)
+    driver.minimize_window()
+    driver.get(link)
+
+    puan = driver.find_element(By.CLASS_NAME, "chevron-list-container")
+    puan = puan.get_attribute("outerHTML")
+    with open("anan.txt", "w") as file:
+        file.write(puan)
+    sellers = re.findall(r'<span data-bind="text: merchantName">(.+?)</span>', puan)
+    ratings = re.findall(r'merchantRatingSummary.cssClass">(.+?)</span>', puan)
+    prices = re.findall(r'style="text-decoration: none">(.+?)</span>', puan)
+    for i in range(len(sellers)):
+        if sellers[i] == "Hepsiburada":
+            ratings.insert(i, "-")
+            break
+
+    text = ""
+    for i in range(len(sellers)):
+        try:
+            text += f"Satıcı {i+2}: {sellers[i]} - {ratings[i]} - Ürün fiyatı: {prices[i]} \n"
+        except IndexError:
+            text += f"Satıcı {i+2}: {sellers[i]} -  - Ürün fiyatı: {prices[i]} \nSatıcı puanlarında kayma meydana geldi!!"
+    return text
+
 
 
 def main(search):
@@ -229,13 +262,14 @@ def edit_excel(product, x, link):
     sheet[f"C{x}"].value = f'{product.ilanismi}'
     sheet[f"D{x}"].value = f'{product.fiyat}'
     sheet[f"E{x}"].value = f'{product.seller}'
-    sheet[f"F{x}"].value = f'{product.ratings}'
-    sheet[f"G{x}"].value = f'{product.reviews}'
-    sheet[f"H{x}"].value = f'{product.answers}'
-    sheet[f"I{x}"].value = f'{product.genel}'
-    sheet[f"J{x}"].value = 'HEPSİBURADA'
-    sheet[f"K{x}"].value = f'{link}'
-    sheet[f"L{x}"].value = f'{product.other_sellers}'
+    sheet[f"F{x}"].value = f'{product.variants}'
+    sheet[f"G{x}"].value = f'{product.ratings}'
+    sheet[f"H{x}"].value = f'{product.reviews}'
+    sheet[f"I{x}"].value = f'{product.answers}'
+    sheet[f"J{x}"].value = f'{product.genel}'
+    sheet[f"K{x}"].value = 'HEPSİBURADA'
+    sheet[f"L{x}"].value = f'{link}'
+    sheet[f"M{x}"].value = f'{product.other_sellers}'
 
     file.save("products.xlsx")
 
