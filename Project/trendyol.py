@@ -13,9 +13,11 @@ from selenium.common.exceptions import NoSuchElementException
 
 product = Product()
 
-
-def edit_search(url,search, len_search):
-    s_words = search.split(" ")
+## Combining the search keywords and the search link appropriately. 
+def edit_search(search):
+    url = "https://www.trendyol.com/sr?q=" 
+    s_words = search.split(" ") ## Split words of the search
+    len_search = len(search.split(" ")) ## Word count of the search
     
     for i  in range(len_search-1):
         url = url + s_words[i]
@@ -32,26 +34,27 @@ def edit_search(url,search, len_search):
         url += "%20"
     url += s_words[len_search-1]
     url += "&os=1"
-    edit_html(url)
+
+    edit_html(url) ## Sending the url
 
 
+## Take the links of the products that appear in the search results
 def edit_html(url):
+    ## Take first 10 html elements that include product links
     sayfa = requests.get(url)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("div", class_="p-card-chldrn-cntnr card-border")
+    isim = isim[:10]
 
-
-    # satır satır yazdırıyorum hepsini
+    ## Write the elements to a file
     with open("links.txt", "w") as file:
         for i in range(len(isim)):
             x = f"{isim[i]}\n"
             file.write(x)
 
-
-    # ürün linki haline getiriyorum
+    ## Extract the product link from elements and write the links to file
     with open("links.txt", "r") as file:
         lines = file.readlines()
-
     with open("links.txt", "w") as file:
         for line in lines:
             line = re.sub(r'(<div class="p-card-chldrn-cntnr card-border"><a href=")', "", line)
@@ -62,14 +65,14 @@ def edit_html(url):
     
 
 
-
+## Take products infos.
 def take_product_info():
     with open("links.txt", "r") as file:
         lines = file.readlines()
     create_excel()
     x = 2
     for line in lines:
-        product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_other_sellers(line), take_ratings(line), take_reviews(line), take_answers(line), take_genel(line))
+        product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_variants(line), take_ratings(line), take_reviews(line), take_answers(line), take_genel(line), take_other_sellers(line))
         edit_excel(product, x, line)
         x += 1
 
@@ -116,22 +119,8 @@ def take_seller(link):
     seller = re.search(r"Bu ürün (.+?) tarafından", isim).group(1)
     return str(seller)
 
-def take_other_sellers(link):
-    sayfa = requests.get(link)
-    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
-    isim = html_sayfa.find_all("div", class_="pr-mc-w gnr-cnt-br")
-    text = "(Satıcı Adı/Satıcı Puanı/Kargo/Fatura/Fiyat)\n\n"
-
-    x = BeautifulSoup(str(isim), "html.parser")
-    linkler = []
-    for i in x.find_all("a"):
-        linkler.append(i['href'])
-
-    for i in range(len(isim)):
-        o = BeautifulSoup(isim[i].text, "html.parser")
-        o = re.sub(r"Ürüne Git", "", str(o))
-        text += f"{i+2}. satıcı: " + str(o) + " https://www.trendyol.com/" + linkler[i] + "\n"
-    return text
+def take_variants(link):
+    pass
 
 def take_ratings(link):
     x = ""
@@ -195,7 +184,11 @@ def take_answers(link):
     son = ""
     for i in range(len(answers)):
         son += (f"Soru{i+1}: {answers[i]} - Cevap{i+1}: {replies[i]}\n")
-    return (son)
+    if son != "":
+        return (son)
+    else:
+        link = re.sub(r"/saticiya-sor?", "\?boutiqueId=.*&", link)
+        return take_answers(link)
 
 def take_genel(link):
     sayfa = requests.get(link)
@@ -203,11 +196,27 @@ def take_genel(link):
     isim = html_sayfa.find("div", class_="flex-container").getText()
     return str(isim)
 
+def take_other_sellers(link):
+    sayfa = requests.get(link)
+    html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
+    isim = html_sayfa.find_all("div", class_="pr-mc-w gnr-cnt-br")
+    text = "(Satıcı Adı/Satıcı Puanı/Kargo/Fatura/Fiyat)\n\n"
+
+    x = BeautifulSoup(str(isim), "html.parser")
+    linkler = []
+    for i in x.find_all("a"):
+        linkler.append(i['href'])
+
+    for i in range(len(isim)):
+        o = BeautifulSoup(isim[i].text, "html.parser")
+        o = re.sub(r"Ürüne Git", "", str(o))
+        text += f"{i+2}. satıcı: " + str(o) + " https://www.trendyol.com/" + linkler[i] + "\n"
+    return text
 
 
-def main(search, len_search):
-    url = "https://www.trendyol.com/sr?q="
-    edit_search(url, search, len_search)
+##Main function
+def main(search):
+    edit_search(search)
     take_product_info()
     
 
@@ -219,17 +228,18 @@ def create_excel():
     sheet['C1'] = 'Ad Name'
     sheet['D1'] = 'Price'
     sheet['E1'] = 'Seller'
-    sheet['F1'] = 'Ratings'
-    sheet['G1'] = 'Reviews'
-    sheet['H1'] = 'ANSWER-REPLY'
-    sheet['I1'] = 'General'
-    sheet['J1'] = 'E-Commerce Site'
-    sheet['K1'] = 'Link'
-    sheet['L1'] = 'Other Sellers'
+    sheet['F1'] = 'Variants'
+    sheet['G1'] = 'Ratings'
+    sheet['H1'] = 'Reviews'
+    sheet['I1'] = 'ANSWER-REPLY'
+    sheet['J1'] = 'General'
+    sheet['K1'] = 'E-Commerce Site'
+    sheet['L1'] = 'Link'
+    sheet['M1'] = 'Other Sellers'
 
     bold_font = Font(bold=True)
     fill = PatternFill(start_color='FF0000FF', end_color='FF0000FF', fill_type='solid')
-    cell_range = 'A1:L1'
+    cell_range = 'A1:M1'
     for row in sheet[cell_range]:
         for cell in row:
             cell.fill = fill
@@ -246,12 +256,13 @@ def edit_excel(product, x, link):
     sheet[f"C{x}"].value = f'{product.ilanismi}'
     sheet[f"D{x}"].value = f'{product.fiyat}'
     sheet[f"E{x}"].value = f'{product.seller}'
-    sheet[f"F{x}"].value = f'{product.ratings}'
-    sheet[f"G{x}"].value = f'{product.reviews}'
-    sheet[f"H{x}"].value = f'{product.answers}'
-    sheet[f"I{x}"].value = f'{product.genel}'
-    sheet[f"J{x}"].value = 'TRENDYOL'
-    sheet[f"K{x}"].value = f'{link}'
-    sheet[f"L{x}"].value = f'{product.other_sellers}'
+    sheet[f"F{x}"].value = f'{product.variants}'
+    sheet[f"G{x}"].value = f'{product.ratings}'
+    sheet[f"H{x}"].value = f'{product.reviews}'
+    sheet[f"I{x}"].value = f'{product.answers}'
+    sheet[f"J{x}"].value = f'{product.genel}'
+    sheet[f"K{x}"].value = 'TRENDYOL'
+    sheet[f"L{x}"].value = f'{link}'
+    sheet[f"M{x}"].value = f'{product.other_sellers}'
 
     file.save("products.xlsx")
