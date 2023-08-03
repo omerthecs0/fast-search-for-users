@@ -9,7 +9,7 @@ Kod şu şekilde çalışmaktadır; kullanıcıdan aldığı arama kelimesi ile 
 Bu program ile birlikte kullanıcılar teker teker e-ticaret sitelerinde istedikleri ürünü aramak için zaman kaybetmekten, enerji harcamaktan ve aradıkları ürünler arasında kararsız kalmaktan kurtuluyor. Çünkü bu program birkaç dakika içerisinde kullanıcıya arama sonuçlarını excel dosyası olarak tablo halinde düzenli bir şekilde sunmaktadır.
 
 
-PROJENİN GENEL DURUMU:    Şu anda sadece 2 e ticaret sitesi için sonuç getirmektedir. Diğer siteler ve google alışveriş aramaları için hala çalışıyorum. "iphone 11" araması yapıldığında ortaya çıkan sonuç şudur -> https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
+PROJENİN GENEL DURUMU:    Şu anda sadece trendyol, hepsiburada, teknosa ve mediamarkt siteleri için sonuç getirmektedir. Diğer siteler ve google alışveriş aramaları için hala çalışıyorum. "iphone 11" araması yapıldığında ortaya çıkan sonuç şudur -> https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -20,5 +20,5 @@ The data collected from the websites includes product category, brand, name, pri
 
 With this program, users are relieved from the time-consuming, energy-draining, and indecisive process of individually searching for their desired products on e-commerce websites. Because this program presents search results to the user within a few minutes, in the form of a well-organized table in an Excel file..
 
-CURRENT STATE OF THE PROJECT: Currently, the code is working for only two e-commerce websites. I am still working on adding support for other websites and Google Shopping searches. When the search keyword "iphone 11" is used, the results obtained can be found at this link: https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
+CURRENT STATE OF THE PROJECT: Currently, the code is working for trendyol, hepsiburada, teknosa ve mediamarkt websites. I am still working on adding support for other websites and Google Shopping searches. When the search keyword "iphone 11" is used, the results obtained can be found at this link: https://github.com/omerthecs0/fast-search-for-users/blob/main/products.xlsx
 
