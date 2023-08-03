@@ -55,7 +55,7 @@ def take_product_info():
     with open("links.txt", "r") as file:
         lines = file.readlines()
 
-    x = 25
+    x = 20
     for link in lines:
         product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_variants(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link), take_other_sellers(link))
         edit_excel(product, x, link)
