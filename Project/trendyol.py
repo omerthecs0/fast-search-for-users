@@ -9,15 +9,16 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.styles import Font
 from selenium.common.exceptions import NoSuchElementException
+import time
 
 
 product = Product()
 
-## Combining the search keywords and the search link appropriately. 
+
 def edit_search(search):
     url = "https://www.trendyol.com/sr?q=" 
-    s_words = search.split(" ") ## Split words of the search
-    len_search = len(search.split(" ")) ## Word count of the search
+    s_words = search.split(" ")
+    len_search = len(search.split(" "))
     
     for i  in range(len_search-1):
         url = url + s_words[i]
@@ -35,24 +36,20 @@ def edit_search(search):
     url += s_words[len_search-1]
     url += "&os=1"
 
-    edit_html(url) ## Sending the url
+    edit_html(url)
 
 
-## Take the links of the products that appear in the search results
 def edit_html(url):
-    ## Take first 10 html elements that include product links
     sayfa = requests.get(url)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("div", class_="p-card-chldrn-cntnr card-border")
     isim = isim[:10]
 
-    ## Write the elements to a file
     with open("links.txt", "w") as file:
         for i in range(len(isim)):
             x = f"{isim[i]}\n"
             file.write(x)
 
-    ## Extract the product link from elements and write the links to file
     with open("links.txt", "r") as file:
         lines = file.readlines()
     with open("links.txt", "w") as file:
@@ -65,13 +62,13 @@ def edit_html(url):
     
 
 
-## Take products infos.
 def take_product_info():
     with open("links.txt", "r") as file:
         lines = file.readlines()
     create_excel()
     x = 2
     for line in lines:
+        time.sleep(2)
         product = Product(take_kategori(line), take_marka(line), take_ilanismi(line), take_fiyat(line), take_seller(line), take_variants(line), take_ratings(line), take_reviews(line), take_answers(line), take_genel(line), take_other_sellers(line))
         edit_excel(product, x, line)
         x += 1
@@ -131,9 +128,9 @@ def take_ratings(link):
         driver.get(link)
         result = driver.find_element(By.CLASS_NAME, "pr-in-rnr")
         res = result.text.splitlines()
-        x += f"{res[0]} Satıcı Puanı"
+        x += f"{res[0]} Satıcı Puanı "
         for i in range(len(res)-1):
-            x += f"\n{res[i+1]}"
+            x += f"\n{res[i+1]} "
         return x
     except NoSuchElementException:
         return "There's no ratings"
@@ -165,30 +162,28 @@ def take_answers(link):
     link = re.sub(r"\?boutiqueId=.*&", "/saticiya-sor?", link)
     driver.minimize_window()
     driver.get(link)
-
-    result = driver.find_elements(By.CLASS_NAME, "item-content")
-    answers = []
-    for i in range(len(result)):
-        text = result[i].text
-        x = text.splitlines()
-        answers.append(x[0])
-
-    result2 = driver.find_elements(By.CLASS_NAME, "answer")
-    replies = []
-    for i in range(len(result)):
-        text = result2[i].text
-        x = text.splitlines()
-        cevap = x[0]+x[1]
-        cevap = re.sub(r".*içinde cevaplandı.", "", cevap)
-        replies.append(cevap)
-    son = ""
-    for i in range(len(answers)):
-        son += (f"Soru{i+1}: {answers[i]} - Cevap{i+1}: {replies[i]}\n")
-    if son != "":
-        return (son)
+    if "Bulunamadı" in driver.find_element(By.CLASS_NAME, "pr-qna-v2").text:
+        return ("There's no answers for this seller")
     else:
-        link = re.sub(r"/saticiya-sor?", "\?boutiqueId=.*&", link)
-        return take_answers(link)
+        result = driver.find_elements(By.CLASS_NAME, "item-content")
+        answers = []
+        for i in range(len(result)):
+            text = result[i].text
+            x = text.splitlines()
+            answers.append(x[0])
+
+        result2 = driver.find_elements(By.CLASS_NAME, "answer")
+        replies = []
+        for i in range(len(result)):
+            text = result2[i].text
+            x = text.splitlines()
+            cevap = x[0]+x[1]
+            cevap = re.sub(r".*içinde cevaplandı.", "", cevap)
+            replies.append(cevap)
+        son = ""
+        for i in range(len(answers)):
+            son += (f"Soru{i+1}: {answers[i]} - Cevap{i+1}: {replies[i]}\n")
+        return (son)
 
 def take_genel(link):
     sayfa = requests.get(link)
