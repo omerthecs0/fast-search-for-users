@@ -51,6 +51,7 @@ def take_product_info():
     
     x = 15
     for link in links:
+        link = link.strip()
         product = Product(take_kategori(link), take_marka(link), take_ilanismi(link), take_fiyat(link), take_seller(link), take_variants(link), take_ratings(link), take_reviews(link), take_answers(link), take_genel(link), take_other_sellers(link))
         edit_excel(product, x, link)
         x += 1
