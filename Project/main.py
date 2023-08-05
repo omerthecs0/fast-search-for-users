@@ -17,6 +17,7 @@ import trendyol
 import hepsiburada
 import teknosa
 import mediamarkt
+import ciceksepeti
 
 
 def main():
@@ -26,6 +27,7 @@ def main():
     hepsiburada.main(search)
     teknosa.main(search)
     mediamarkt.main(search)
+    ciceksepeti.main(search)
 
 
 def take_search():
