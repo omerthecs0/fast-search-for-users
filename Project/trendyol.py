@@ -14,11 +14,11 @@ import time
 
 product = Product()
 
-
+## Combining the search keywords and the search link appropriately. 
 def edit_search(search):
     url = "https://www.trendyol.com/sr?q=" 
-    s_words = search.split(" ")
-    len_search = len(search.split(" "))
+    s_words = search.split(" ") ## Split words of the search
+    len_search = len(search.split(" ")) ## Word count of the search
     
     for i  in range(len_search-1):
         url = url + s_words[i]
@@ -36,20 +36,24 @@ def edit_search(search):
     url += s_words[len_search-1]
     url += "&os=1"
 
-    edit_html(url)
+    edit_html(url) ## Sending the url
 
 
+## Take the links of the products that appear in the search results
 def edit_html(url):
+    ## Take first 10 html elements that include product links
     sayfa = requests.get(url)
     html_sayfa = BeautifulSoup(sayfa.content, "html.parser")
     isim = html_sayfa.find_all("div", class_="p-card-chldrn-cntnr card-border")
     isim = isim[:10]
 
+    ## Write the elements to a file
     with open("links.txt", "w") as file:
         for i in range(len(isim)):
             x = f"{isim[i]}\n"
             file.write(x)
 
+    ## Extract the product link from elements and write the links to file
     with open("links.txt", "r") as file:
         lines = file.readlines()
     with open("links.txt", "w") as file:
@@ -62,6 +66,7 @@ def edit_html(url):
     
 
 
+## Take products infos.
 def take_product_info():
     with open("links.txt", "r") as file:
         lines = file.readlines()
