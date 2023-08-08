@@ -14,28 +14,13 @@ import time
 
 product = Product()
 
+
 ## Combining the search keywords and the search link appropriately. 
 def edit_search(search):
     url = "https://www.trendyol.com/sr?q=" 
-    s_words = search.split(" ") ## Split words of the search
-    len_search = len(search.split(" ")) ## Word count of the search
-    
-    for i  in range(len_search-1):
-        url = url + s_words[i]
-        url += "%20"
-    url += s_words[len_search-1]
-    url += "&qt="
-    for i  in range(len_search-1):
-        url = url + s_words[i]
-        url += "%20"
-    url += s_words[len_search-1]
-    url += "&st="
-    for i  in range(len_search-1):
-        url = url + s_words[i]
-        url += "%20"
-    url += s_words[len_search-1]
-    url += "&os=1"
-
+    search = search.split(" ") ## Split words of the search
+    search = "%20".join(search)
+    url += search + "&qt=" + search + "&st=" + search + "&os=1"
     edit_html(url) ## Sending the url
 
 
