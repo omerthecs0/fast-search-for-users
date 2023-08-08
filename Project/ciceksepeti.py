@@ -7,21 +7,16 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from openpyxl import Workbook, load_workbook
 from selenium.common.exceptions import NoSuchElementException
-import time
 
 
 
 
 
 def edit_link(search):
-    x = "/arama?query=iphone%2011&qt=iphone%2011&choice=2"
-    search = search.strip().split(" ")
     url = "https://www.ciceksepeti.com/arama?query="
-    x = ""
-    for i in range(len(search)-1):
-        x += search[i] + "%20"
-    x += search[-1]
-    url += x + "&qt=" + x + "&choice=2" 
+    search = search.strip().split(" ")
+    search = "%20".join(search)
+    url += search + "&qt=" + search + "&choice=2"
     take_links(url)
 
 
