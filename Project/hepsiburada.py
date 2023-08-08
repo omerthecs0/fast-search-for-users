@@ -15,8 +15,9 @@ import time
 
 def edit_link(search):
     d = "https://www.hepsiburada.com/ara?q="
-    x = re.sub(r" ", "+", search)
-    url = d + x
+    search = search.strip().split(" ")
+    search = "+".join(search)
+    url = d + search
     take_links(url)
 
 
