@@ -28,7 +28,8 @@ def get_page_content(link):
 
 def edit_link(search):
     url = "https://www.teknosa.com/arama/?s="
-    search = re.sub(r" ", "+", search)
+    search = search.strip().split(" ")
+    search = "+".join(search)
     url += search
     take_links(url)
 
