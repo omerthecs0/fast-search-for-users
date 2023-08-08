@@ -16,30 +16,28 @@ def edit_link(search):
     x = str(search)
     site = "https://www.mediamarkt.com.tr"
     search_link = "https://www.mediamarkt.com.tr/tr/search.html?query=&searchProfile=onlineshop&channel=mmtrtr"
-    search = str(search).split(" ")
-    search_link = re.sub(r"query=", f"query={search[0]}", search_link)
-    for i in range(len(search)-1):
-        search_link = re.sub(r"&", f"+{search[i+1]}&", search_link)
-    take_html(x, search_link)
+    search = search.split(" ")
+    search = "-".join(search)
+    search_link = re.sub(r"query=", f"query={search}", search_link)
+    take_html(search, search_link)
 
 
-def take_html(x, url):
+def take_html(search, url):
     html = requests.get(url)
     html = BeautifulSoup(html.content, "html.parser")
     html = html.find_all("div", class_="product-wrapper")
     
-    x = x.replace(" ", "-")
     links = []
     for i in range(len(html)):
         link = re.findall(r'<a href="(.+?)" itemprop="url"></a>', str(html[i]))
-        if x in link[0]:
+        if search in link[0]:
             links.append(str(link[0].strip()))
-    
-    
-        
+
+
     with open("links.txt", "w") as file:
         for link in links:
             file.write(link + "\n")
+
 
 
 def take_product_info():
@@ -127,7 +125,6 @@ def take_reviews(link):
     for i in range(len(headers)):
         text += f"    {i+1}.: {headers[i]} - {comments[i]} \n"
     return text
-
 
 def take_answers(link):
     return "Answer-reply is not avaible for MediaMarkt products"
